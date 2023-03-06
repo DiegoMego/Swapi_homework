@@ -1,4 +1,5 @@
 import React from "react";
+import Skeleton from 'react-loading-skeleton';
 
 function PersonDetailRow({ label, value }) {
   return (
@@ -25,12 +26,13 @@ function PersonDetails({ person }) {
   );
 }
 
-function PersonContainer({ person }) {
+function PersonContainer({ person, personLoading }) {
   return (
     <div className="person-container">
       <p className="person-container-header">Show information:</p>
       <div className="person-details">
-        {person && (
+        {personLoading && <Skeleton count={7} />}
+        {!personLoading && person && (
           <PersonDetails person={person} />
         )}
       </div>
