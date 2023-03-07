@@ -30,6 +30,16 @@
   justify-content: center;
 }
 
+.person-details {
+  width: 94%;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: auto;
+  padding: 3%;
+  height: 211px;
+}
+
 @media screen and (min-width: 768px) {
   .app {
     display: grid;
@@ -47,6 +57,16 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+  }
+
+  .person-details {
+    width: 94%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: auto;
+    padding: 18px;
+    height: 211px;
   }
 }
 
@@ -189,16 +209,6 @@
   font-weight: bold;
   margin-bottom: 5px;
   font-family: "Helvetica Neue";
-}
-
-.person-details {
-  width: 94%;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow: auto;
-  padding: 18px;
-  height: 211px;
 }
 
 .person-details-row {
