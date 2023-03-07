@@ -1,43 +1,48 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Oval } from "react-loader-spinner";
+import useFetch from "./useFetch";
 
 function capitalizeFirstLetter(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function PeopleContainer({ people, setPeople, setPerson, setPersonLoading }) {
+function PeopleContainer({ setPerson, setPersonLoading }) {
+  const [firstLoad, setFirstLoad] = useState(true);
+  const [inputText, setInputText] = useState("");
   const [searchText, setSearchText] = useState("");
   const [selectedPersonUrl, setSelectedPersonUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  async function getPeople(text) {
-    setIsLoading(true);
-    const result = [];
-    let response = await axios.get("https://swapi.dev/api/people", {
-      params: {
-        search: text,
-      },
+  const [page, setPage] = useState(1);
+  const { loading, items, hasMore } = useFetch(
+    "https://swapi.dev/api/people",
+    searchText,
+    page,
+    firstLoad
+  );
+  const observer = useRef();
+  const lastItemElementRef = useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
     });
-    const iterations =
-      Math.ceil(response.data.count / response.data.results.length);
-    result.push(...response.data.results);
-    for (let page = 2; page <= iterations; page++) {
-      response = await axios.get("https://swapi.dev/api/people", {
-        params: {
-          search: text,
-          page, 
-        },
-      });
-      result.push(...response.data.results);
-    }
-    setPeople(result);
-    setIsLoading(false);
-  }
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
+
   const onClick = async () => {
-    await getPeople(searchText);
+    setFirstLoad(false);
+    setPage(1);
+    setSearchText(inputText);
   };
+
   const onKeyDown = async (e) => {
-    if (e.key === "Enter") await getPeople(searchText);
+    if (e.key === "Enter") {
+      setFirstLoad(false);
+      setPage(1);
+      setSearchText(inputText);
+    }
   };
 
   const viewPersonInfo = async () => {
@@ -56,8 +61,8 @@ function PeopleContainer({ people, setPeople, setPerson, setPersonLoading }) {
           className="search-box"
           type="search"
           placeholder="Search People"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
           onKeyDown={onKeyDown}
         />
         <button className="search-button" type="button" onClick={onClick}>
@@ -65,7 +70,48 @@ function PeopleContainer({ people, setPeople, setPerson, setPersonLoading }) {
         </button>
       </div>
       <div className="people-found">
-        {isLoading && (
+        {!firstLoad && items.map(({ name, birth_year, gender, height, url }, idx) => {
+          if (items.length === idx + 1) return (
+            <div
+              className={`${
+                selectedPersonUrl === url ? "person person-selected" : "person"
+              }`}
+              onClick={() => setSelectedPersonUrl(url)}
+              ref={lastItemElementRef}
+            >
+              <p className="person-info-row">
+                <span>{name}</span>
+                <span className="button-like-text">{birth_year}</span>
+              </p>
+              <p className="person-info-row">
+                <span>
+                  {gender !== "n/a" ? capitalizeFirstLetter(gender) : gender}
+                </span>
+                <span>{height}</span>
+              </p>
+            </div>
+          )
+          return (
+            <div
+              className={`${
+                selectedPersonUrl === url ? "person person-selected" : "person"
+              }`}
+              onClick={() => setSelectedPersonUrl(url)}
+            >
+              <p className="person-info-row">
+                <span>{name}</span>
+                <span className="button-like-text">{birth_year}</span>
+              </p>
+              <p className="person-info-row">
+                <span>
+                  {gender !== "n/a" ? capitalizeFirstLetter(gender) : gender}
+                </span>
+                <span>{height}</span>
+              </p>
+            </div>
+          );
+        })}
+        {loading && (
           <Oval
             height={80}
             width={80}
@@ -79,31 +125,7 @@ function PeopleContainer({ people, setPeople, setPerson, setPersonLoading }) {
             strokeWidthSecondary={4}
           />
         )}
-        {!isLoading &&
-          people.map(({ name, birth_year, gender, height, url }) => {
-            return (
-              <div
-                className={`${
-                  selectedPersonUrl === url
-                    ? "person person-selected"
-                    : "person"
-                }`}
-                onClick={() => setSelectedPersonUrl(url)}
-              >
-                <p className="person-info-row">
-                  <span>{name}</span>
-                  <span className="button-like-text">{birth_year}</span>
-                </p>
-                <p className="person-info-row">
-                  <span>
-                    {gender !== "n/a" ? capitalizeFirstLetter(gender) : gender}
-                  </span>
-                  <span>{height}</span>
-                </p>
-              </div>
-            );
-          })}
-        {!isLoading && people.length === 0 && (
+        {(firstLoad || !loading && items.length === 0) && (
           <div className="no-people-text">There are not people</div>
         )}
       </div>

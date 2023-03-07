@@ -89,6 +89,8 @@
   width: 100%;
   height: 48px;
   padding-left: 12px;
+  font-family: "Helvetica Neue";
+  font-size: 18px;
 }
 
 .search-box::placeholder {
@@ -175,8 +177,9 @@
   background-color: #3070ed;
   color: #fff;
   text-align: right;
-  padding: 5px 0px;
+  padding-bottom: 5px;
   padding-right: 11px;
+  padding-top: 6px;
   border: 1px solid #3070ed;
   border-radius: 4px;
   width: 98px;
