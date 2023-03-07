@@ -12,12 +12,25 @@ function PeopleContainer({ people, setPeople, setPerson, setPersonLoading }) {
   const [isLoading, setIsLoading] = useState(false);
   async function getPeople(text) {
     setIsLoading(true);
-    const response = await axios.get("https://swapi.dev/api/people", {
+    const result = [];
+    let response = await axios.get("https://swapi.dev/api/people", {
       params: {
         search: text,
       },
     });
-    setPeople(response.data.results);
+    const iterations =
+      Math.ceil(response.data.count / response.data.results.length);
+    result.push(...response.data.results);
+    for (let page = 2; page <= iterations; page++) {
+      response = await axios.get("https://swapi.dev/api/people", {
+        params: {
+          search: text,
+          page, 
+        },
+      });
+      result.push(...response.data.results);
+    }
+    setPeople(result);
     setIsLoading(false);
   }
   const onClick = async () => {
