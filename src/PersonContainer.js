@@ -31,7 +31,7 @@ function PersonContainer({ person, personLoading }) {
     <div className="person-container">
       <p className="person-container-header">Show information:</p>
       <div className="person-details">
-        {personLoading && <Skeleton count={7} />}
+        {personLoading && <Skeleton count={7} className="custom-skeleton" />}
         {!personLoading && person && (
           <PersonDetails person={person} />
         )}
